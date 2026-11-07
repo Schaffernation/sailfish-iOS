@@ -80,7 +80,7 @@ struct MenuSheet: View {
                     MenuGroup(section: sections[index], fill: fill, ink: ink)
                 }
                 if let footer, let siteSettingsAction {
-                    TrackerFooter(shown: footer, fill: fill, open: siteSettingsAction)
+                    TrackerFooter(shown: footer, fill: fill, open: siteSettingsAction, reloadUnblocked: reloadUnblocked)
                 }
             }
             .padding(.top, ActionTile.labelToList)
@@ -148,12 +148,17 @@ struct MenuSheet: View {
     }
 
     private var footerShown: TrackerFooter.Shown? {
-        guard let host = controller.url?.host(),
-            let content = TrackerFooter.Content.of(
-                blocksGlobally: !env.browser.settings.blockedCategories.isEmpty,
-                blocksSite: env.siteSettings(forHost: host).blocksTrackers, count: controller.blockedCount)
-        else { return nil }
-        return TrackerFooter.Shown(host: host, content: content)
+        guard let host = controller.url?.host() else { return nil }
+        return TrackerFooter.Shown.of(
+            host: host, blocksGlobally: !env.browser.settings.blockedCategories.isEmpty,
+            blocksSite: env.siteSettings(forHost: host).blocksTrackers, isUnblocked: controller.isUnblocked,
+            count: controller.blockedCount)
+    }
+
+    // As the address pill's reload: the menu stays up, its footer turning to the unblocked load.
+    private func reloadUnblocked() {
+        env.haptics.fire(.menuNav)
+        controller.reloadWithoutBlockers()
     }
 
     // The footer comes and goes as a fold does: springing while the menu is up, after a close has hidden it.

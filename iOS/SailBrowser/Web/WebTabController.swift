@@ -47,6 +47,8 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
     // Non-nil while the reader shows over the page.
     private(set) var readerArticle: ReaderArticle?
     private(set) var blockedCount = 0
+    // The page loading, or the one shown, was asked for without content blocking, for this load only.
+    private(set) var isUnblocked = false
     var needsReload = false
     // Desktop content mode drops the configuration's application name, so desktop sends the whole Safari string.
     var prefersDesktop = false {
@@ -86,6 +88,7 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
     @ObservationIgnored let dialogs = PageDialogs()
     @ObservationIgnored private var site = SiteSettings()
     @ObservationIgnored private var blockedURLs: Set<URL> = []
+    @ObservationIgnored private var unblockedLoad = UnblockedLoad()
     @ObservationIgnored private var committedURL: URL?
     @ObservationIgnored private var committedTitled = false
 
@@ -447,6 +450,7 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
     }
 
     func load(_ url: URL) {
+        changeUnblocked { $0.end() }
         webView.load(URLRequest(url: url))
     }
 
@@ -465,10 +469,25 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
     // With an error page showing, every reload path retries the failed URL: a never-committed tab has nothing to
     // reload, and the nav pill fires its own haptic before calling here.
     func reload() {
+        changeUnblocked { $0.end() }
         if loadError == nil {
             webView.reload()
         } else {
             performRetry()
+        }
+    }
+
+    // The menu's one load of this page with content blocking off; the site's setting stays as it is. WebKit decides
+    // the reload's navigation on a later turn, so the request set after the reload starts is in place for it.
+    func reloadWithoutBlockers() {
+        reload()
+        changeUnblocked { $0.request() }
+    }
+
+    private func changeUnblocked(_ change: (inout UnblockedLoad) -> Void) {
+        change(&unblockedLoad)
+        if isUnblocked != unblockedLoad.isOn {
+            isUnblocked = unblockedLoad.isOn
         }
     }
 
@@ -805,6 +824,7 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
         if let link = LinkRequest(navigationAction), await leavesForApp(link) { return (.cancel, preferences) }
         preferences.preferredContentMode = prefersDesktop ? .desktop : .mobile
         if navigationAction.targetFrame?.isMainFrame == true {
+            changeUnblocked { $0.decide(navigationAction.request.url, as: .init(navigationAction.navigationType)) }
             site = applySite(navigationAction.request.url?.host() ?? "")
         }
         preferences.allowsContentJavaScript = site.allowsJavaScript
@@ -840,6 +860,7 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
         }
         translator.reset()
         // What commits can differ from what was decided: a failed cross-site load can commit WebKit's own blank page.
+        changeUnblocked { $0.commit(webView.url) }
         site = applySite(webView.url?.host() ?? "")
         committedURL = webView.url
         committedTitled = !(webView.title ?? "").isEmpty
@@ -956,6 +977,7 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
         if (error as? URLError)?.code == .cancelled, webView.isLoading { return }
         cancelLanding()
         // The failed navigation's site was applied when it was decided; the page still shown is the committed one.
+        changeUnblocked { $0.end() }
         site = applySite(webView.url?.host() ?? "")
         let failedURL = provisionalURL
         provisionalURL = nil
@@ -1249,6 +1271,7 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
         }
         if refreshes {
             haptics.fire(.pullRelease)
+            changeUnblocked { $0.end() }
             let navigation = webView.reload()
             isPullRefreshing = webView.isLoading
             if isPullRefreshing {
@@ -1293,6 +1316,19 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
                 let urls = (value as! [String]).compactMap(URL.init(string:))
                 self?.onFavicon?(host, urls)
             }
+        }
+    }
+}
+
+extension UnblockedLoad.Navigation {
+    // A form sent from the page leaves it as a link does; one sent again is the page's reload.
+    init(_ type: WKNavigationType) {
+        switch type {
+        case .linkActivated, .formSubmitted: self = .link
+        case .reload, .formResubmitted: self = .reload
+        case .backForward: self = .backForward
+        case .other: self = .other
+        @unknown default: self = .other
         }
     }
 }

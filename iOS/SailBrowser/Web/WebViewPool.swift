@@ -182,7 +182,9 @@ final class WebViewPool {
         controller.applySite = { [weak self, unowned controller] host in
             guard let self else { return SiteSettings() }
             let site = siteSettings(host, isPrivate(controller.tabID))
-            blocker.setBlocking(site.blocksTrackers, host: host, on: controller.webView.configuration.userContentController)
+            // A load without blockers is the controller's own: its content controller is no other web view's.
+            let blocks = site.blocksTrackers && !controller.isUnblocked
+            blocker.setBlocking(blocks, host: host, on: controller.webView.configuration.userContentController)
             return site
         }
         trackers.route(controller)
