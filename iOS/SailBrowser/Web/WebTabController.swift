@@ -628,6 +628,13 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
         readerArticle == nil ? barTint : Theme.Palette.readerBackground
     }
 
+    // The scroll view whose content shows through the band, under the system's scroll edge effect, as Safari's does
+    // under the status bar; nil where the band stays solid. A private page's band carries its label and island ring,
+    // the error page does not scroll, and the reader keeps its plain band over the article.
+    var scrollViewUnderBand: UIScrollView? {
+        !isPrivate && loadError == nil && readerArticle == nil ? webView.scrollView : nil
+    }
+
     // In element fullscreen the page is in WebKit's window at the landscape width and the picture would be the video,
     // so the tab keeps its last one.
     func snapshot(width: CGFloat) async -> UIImage? {

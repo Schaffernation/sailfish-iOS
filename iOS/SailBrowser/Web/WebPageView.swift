@@ -14,9 +14,14 @@ struct WebPageView: UIViewRepresentable {
         var onWindow: (() -> Void)?
         var orientation: OrientationPolicy = .shared
         private var fullscreenObservation: NSKeyValueObservation?
-        // The page's safe space at the top: the page tint over the status bar, above the page so
-        // nothing scrolls under the status bar, and inside the stage so it scales and clips with the card.
+        // The page's safe space at the top, over the status bar: above the page, which starts below it, and inside
+        // the stage so it scales and clips with the card.
         let band = UIView()
+        // Draws the page's top scroll edge effect under the band. The effect takes its shape from the labels and
+        // controls in the container, and the time and battery are drawn in the status bar's own window, so a clear
+        // label across the band stands in for them.
+        private let edge = UIScrollEdgeElementContainerInteraction()
+        private let statusStandIn = UILabel()
         let privateBand = PrivateBandView()
         private let stage = UIView()
         private let crop = CropLayer()
@@ -31,6 +36,11 @@ struct WebPageView: UIViewRepresentable {
             crop.backgroundColor = UIColor.black.cgColor
             crop.cornerCurve = .continuous
             band.isUserInteractionEnabled = false
+            edge.edge = .top
+            band.addInteraction(edge)
+            statusStandIn.text = " "
+            statusStandIn.isAccessibilityElement = false
+            band.addSubview(statusStandIn)
             stage.addSubview(band)
             privateBand.isHidden = true
             band.addSubview(privateBand)
@@ -56,13 +66,20 @@ struct WebPageView: UIViewRepresentable {
             stage.bounds = bounds
             stage.center = CGPoint(x: bounds.midX, y: bounds.midY)
             band.frame.size.width = bounds.width
+            statusStandIn.frame = band.bounds
             privateBand.frame = band.bounds
             applyCrop()
         }
 
-        func paintBand(height: CGFloat, color: UIColor) {
+        // Over a scroll view the band is clear while browsing, so the page scrolls on under the status bar with the
+        // system's top edge effect keeping the time legible. It fills in with the card's shrink toward the deck,
+        // where it meets the tabs' pictures, which carry it solid.
+        func paintBand(height: CGFloat, color: UIColor, over scrollView: UIScrollView?, scale: CGFloat) {
             band.frame = CGRect(x: 0, y: 0, width: bounds.width, height: height)
-            band.backgroundColor = color
+            statusStandIn.frame = band.bounds
+            edge.scrollView = scrollView
+            let fill = scrollView == nil ? 1 : min(1, (1 - scale) / (1 - Theme.Metrics.cardWidthFraction))
+            band.backgroundColor = color.withAlphaComponent(fill)
         }
 
         func showPrivateBand(_ shown: Bool, safeTop: CGFloat) {
@@ -198,7 +215,7 @@ struct WebPageView: UIViewRepresentable {
         if !container.isHoldingFullscreen {
             controller.apply(safeTop: top)
         }
-        container.paintBand(height: top, color: controller.bandTint)
+        container.paintBand(height: top, color: controller.bandTint, over: controller.scrollViewUnderBand, scale: geometry.scale)
         container.showPrivateBand(isPrivate, safeTop: screenInsets.top)
         container.onWindow = { [weak controller] in controller?.revealWhenPainted() }
         controller.revealWhenPainted()
