@@ -204,6 +204,9 @@ struct WebPageView: UIViewRepresentable {
         controller.revealWhenPainted()
         container.apply(geometry)
         container.isUserInteractionEnabled = isInteractive
+        if isInteractive {
+            controller.pageTakesTouches()
+        }
     }
 
     static func dismantleUIView(_ container: Container, coordinator: ()) {

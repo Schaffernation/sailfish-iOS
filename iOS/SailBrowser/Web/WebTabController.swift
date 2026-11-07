@@ -88,6 +88,8 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
     @ObservationIgnored private var blockedURLs: Set<URL> = []
     @ObservationIgnored private var committedURL: URL?
     @ObservationIgnored private var committedTitled = false
+    // Find asked for while the page takes no touches, presented once it takes them again.
+    @ObservationIgnored private var isFindPending = false
 
     @ObservationIgnored private let haptics: HapticsEngine
     @ObservationIgnored private var bars = BarVisibility()
@@ -677,9 +679,24 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
         webView.interactionState as? Data
     }
 
+    // The menu asks for find while its open sheet keeps the page from touches. When the page takes touches again, UIKit
+    // gives first responder back to the page view that last held it, which ends a find session begun before then, so
+    // the find navigator waits for the page to take touches.
     func presentFind() {
+        guard sequence(first: webView, next: \.superview).allSatisfy(\.isUserInteractionEnabled) else {
+            isFindPending = true
+            return
+        }
+        isFindPending = false
         webView.findInteraction?.presentFindNavigator(showingReplace: false)
         syncFindNavigator()
+    }
+
+    // The page's view takes touches; a find asked for meanwhile is presented once that view update, which hands first
+    // responder back, has ended.
+    func pageTakesTouches() {
+        guard isFindPending else { return }
+        Task { presentFind() }
     }
 
     // The find interaction flips its visibility inside present and dismiss, but dismiss posts this notification before
