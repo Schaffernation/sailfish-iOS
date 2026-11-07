@@ -29,6 +29,7 @@ struct RootView: View {
                 #endif
             SearchSheetHost(isActive: ui.overlay == .search, isSubmitting: ui.isSubmitting)
                 .ignoresSafeArea()
+            ToastOverlay(center: ui.toasts)
         }
         .sheet(item: ui.presentedSheet) { item in
             Group {

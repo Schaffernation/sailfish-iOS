@@ -118,6 +118,13 @@ enum Theme {
         nonisolated static let privateRowsFade = MotionToken.curve(duration: 8.0 / 60, .linear)
         // The page's fold settles from a release, and plays back from the card, on this spring.
         nonisolated static let fold = MotionToken.spring(duration: 0.32, bounce: 0)
+        // Copy Link's glyph winks out quickly, stays out long enough to read as done, then pops back with a little
+        // bounce, about 0.85 s from the tap; the toast it raises stays up 1.5 s.
+        nonisolated static let winkOut = MotionToken.spring(duration: 0.18, bounce: 0)
+        nonisolated static let winkHold: Duration = .milliseconds(450)
+        nonisolated static let winkIn = MotionToken.spring(duration: 0.4, bounce: 0.3)
+        nonisolated static let toast = MotionToken.spring(duration: 0.35, bounce: 0.15)
+        nonisolated static let toastHold: Duration = .milliseconds(1500)
 
         static func token(for interaction: Interaction) -> MotionToken? {
             switch interaction {
@@ -423,6 +430,8 @@ enum Theme {
         // The fine knob over the sheet's material; each 0.10 darkens about 8 levels over white and 1 over dark.
         static let sheetTint = Palette.uiHex(0x2A2A2C)
         static let sheetTintOpacity: CGFloat = 0
+        // A toast is the search sheet's dark material, so it reads the same over a light page and a dark one.
+        static let toast = sheet
         // The page menu and the permission prompt: a thick material under the measured gradient.
         static func menu(light: Bool) -> UIBlurEffect.Style {
             light ? .systemThickMaterialLight : .systemThickMaterialDark
@@ -627,6 +636,14 @@ enum Theme {
         static let permissionSidePadding: CGFloat = 24
         static let permissionGrabberSize = CGSize(width: 36, height: 5)
         static let permissionGrabberTop: CGFloat = 5
+        // A toast's capsule, below the top safe area.
+        static let toastTop: CGFloat = 8
+        static let toastHeight: CGFloat = 40
+        static let toastPadding: CGFloat = 18
+        static let toastGlyphGap: CGFloat = 8
+        static let toastEnterScale: CGFloat = 0.8
+        // How small Copy Link's glyph shrinks as it winks out.
+        static let winkScale: CGFloat = 0.3
 
         nonisolated static let pressScale: CGFloat = 0.94
         nonisolated static let pressScaleWide: CGFloat = 0.98
@@ -673,6 +690,7 @@ enum Theme {
         static let menuRowDisabled: CGFloat = 0.45
         static let barEdge: CGFloat = 0.1
         static let searchSheetEdge: CGFloat = 0.12
+        static let toastEdge: CGFloat = 0.12
         static let loadingLineGlow: CGFloat = 0.6
         static let loadingRingHead: CGFloat = 0.6
         static let loadingRingTail: CGFloat = 0.1
@@ -721,6 +739,8 @@ enum Theme {
         static let permissionGlyph = Font.system(size: 34, weight: .regular)
         static let permissionTitle = Font.system(size: 20, weight: .semibold)
         static let permissionButton = Font.system(size: 17, weight: .semibold)
+        static let toastGlyph = Font.system(size: 14, weight: .semibold)
+        static let toastMessage = Font.system(size: 15, weight: .semibold)
         // The reader's type in the system serif, substituted into reader.css; the title at the platform's Title 1 size.
         static let readerBody = WebFont(family: "ui-serif", size: 19, weight: 400)
         static let readerTitle = WebFont(family: "ui-serif", size: 28, weight: 700)

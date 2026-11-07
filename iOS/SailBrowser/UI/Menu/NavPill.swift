@@ -39,16 +39,11 @@ struct NavPill: View {
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Edit Address")
-                Button(action: copyLink) {
+                CopyLinkButton(copy: copyLink) {
                     icon("link")
                 }
-                .buttonStyle(PressStyle(scale: Theme.Metrics.pressScaleWide, preparing: .menuCopyLink))
                 .disabled(controller.url == nil)
                 .opacity(controller.url == nil ? Theme.Opacity.navPillDisabled : 1)
-                .accessibilityLabel("Copy Link")
-                #if DEBUG
-                .debugAction(.menuCopyLink, copyLink)
-                #endif
                 button("arrow.clockwise", label: "Reload", enabled: true, action: controller.reload)
                 #if DEBUG
                 .debugAction(.menuNav) { navigate(controller.reload) }
@@ -80,6 +75,8 @@ struct NavPill: View {
     private func copyLink() {
         UIPasteboard.general.url = TrackingParams.strip(controller.url!)
         env.haptics.fire(.menuCopyLink)
+        // The menu stays open, as before: the toast shows over it, and the page's other actions stay at hand.
+        env.ui.toasts.show(Toast(message: "Link Copied", systemImage: "checkmark"))
     }
 
     private func navigate(_ action: () -> Void) {

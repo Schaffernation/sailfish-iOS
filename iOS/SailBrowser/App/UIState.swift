@@ -20,6 +20,8 @@ import SwiftUI
     private(set) var deckProgress: CGFloat = 0
     // Draws the deck's zoom and the bars' cross-fade from one display link.
     let deck = DeckDriver()
+    // The confirmation over everything, such as Copy Link's.
+    let toasts = ToastCenter()
     private(set) var searchShrink: CGFloat = 0
     @ObservationIgnored private(set) var searchShrinkMotion: ShrinkMotion?
     private(set) var behindOpacity: CGFloat = 1
