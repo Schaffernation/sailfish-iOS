@@ -23,7 +23,7 @@ struct SwitcherBar: View {
         .frame(height: Theme.Metrics.barTotalHeight, alignment: .bottom)
         .background {
             BarBackground(style: .deck)
-                .overlay(alignment: .top) { BarHairline() }
+                .overlay(alignment: .top) { BarHairline(style: .deck) }
         }
     }
 

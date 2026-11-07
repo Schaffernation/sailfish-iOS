@@ -672,6 +672,9 @@ enum Theme {
         // A disabled menu row's text and glyph; its fill stays.
         static let menuRowDisabled: CGFloat = 0.45
         static let barEdge: CGFloat = 0.1
+        // Black over the light bar's material: the line reads about 207 between a 238 page and the 244 bar. Tune on
+        // the phone.
+        static let lightBarEdge: CGFloat = 0.15
         static let searchSheetEdge: CGFloat = 0.12
         static let loadingLineGlow: CGFloat = 0.6
         static let loadingRingHead: CGFloat = 0.6

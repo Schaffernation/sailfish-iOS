@@ -38,7 +38,7 @@ struct BottomBar: View {
         .frame(height: Theme.Metrics.barTotalHeight, alignment: .bottom)
         .background {
             BarBackground(style: style)
-                .overlay(alignment: .top) { BarHairline() }
+                .overlay(alignment: .top) { BarHairline(style: style) }
         }
         .overlay(alignment: .bottom) {
             TabStackCopies(foreground: style.glyph)
@@ -453,10 +453,14 @@ struct BarFloor: View {
     }
 }
 
+// The line between the page and the bar. White adds about one level to the light bar's material, so over a light
+// page it leaves nothing to see; the light bar takes a dark line, as the system's separators do.
 struct BarHairline: View {
+    let style: BarStyle
+
     var body: some View {
         Rectangle()
-            .fill(.white.opacity(Theme.Opacity.barEdge))
+            .fill(style.hairline)
             .frame(height: Theme.Metrics.hairlineWidth)
     }
 }

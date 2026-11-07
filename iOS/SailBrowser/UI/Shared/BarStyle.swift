@@ -23,6 +23,11 @@ struct BarStyle: Equatable {
         if isPrivate { return Theme.Palette.privateBarControlFill }
         return light ? .black.opacity(Theme.Opacity.browsingControlFill) : .white.opacity(Theme.Opacity.darkBarControlFill)
     }
+
+    var hairline: Color {
+        if light && !atDeck && !isPrivate { return .black.opacity(Theme.Opacity.lightBarEdge) }
+        return .white.opacity(Theme.Opacity.barEdge)
+    }
 }
 
 struct BarBackground: View {
