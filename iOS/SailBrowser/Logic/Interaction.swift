@@ -13,7 +13,7 @@ nonisolated enum Interaction: String, CaseIterable, Sendable {
     case chevronTap, chevronLongPress
     case barTranslate
     case menuDragDismiss, menuDragReturn, menuGrabDuringOpen, menuDimTap
-    case menuNav, menuCopyLink, menuAddressEdit, menuAddressSubmit
+    case menuNav, menuHistoryJump, menuCopyLink, menuAddressEdit, menuAddressSubmit
     case pin, unpin, menuFind, menuShare, zoomStep, desktopToggle, displayOptionsToggle, menuTranslate
     case readerOpen, readerClose, readerDragDismiss, readerDragReturn
     case archiveOpen, settingsOpen, archiveRestore, archiveDelete, settingsChange, clearData, sheetDone

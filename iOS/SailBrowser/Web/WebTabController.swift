@@ -462,6 +462,31 @@ final class WebTabController: NSObject, WKNavigationDelegate, WKUIDelegate, UISc
         webView.goForward()
     }
 
+    // The pages a hold on Back or Forward lists, nearest first, built as the menu opens. An error page over the page
+    // the person was reading puts that page first in the back list, where Back's own step goes. The pool's prewarmed
+    // blank page is no page to return to.
+    func history(_ direction: HistoryDirection) -> [WKBackForwardListItem] {
+        let list = webView.backForwardList
+        let items =
+            switch direction {
+            case .back: (coversCommittedPage ? list.currentItem.map { [$0] } ?? [] : []) + list.backList.reversed()
+            case .forward: list.forwardList
+            }
+        return items.filter { HistoryRow.isPage($0.url) }
+    }
+
+    // A row of that list. The page under an error page is still the current item, so going to it clears the error as
+    // Back does.
+    func go(to item: WKBackForwardListItem) {
+        if item == webView.backForwardList.currentItem {
+            if coversCommittedPage {
+                clearError()
+            }
+        } else {
+            webView.go(to: item)
+        }
+    }
+
     // With an error page showing, every reload path retries the failed URL: a never-committed tab has nothing to
     // reload, and the nav pill fires its own haptic before calling here.
     func reload() {

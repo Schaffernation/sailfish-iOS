@@ -141,7 +141,9 @@ enum Theme {
             case .chevronTap: menuOpen
             case .menuDragReturn: menuReturn
             case .displayOptionsToggle: menuFold
-            case .menuDragDismiss, .menuDimTap, .menuAddressSubmit, .menuFind, .menuShare, .menuTranslate: menuClose
+            case .menuDragDismiss, .menuDimTap, .menuAddressSubmit, .menuHistoryJump, .menuFind, .menuShare,
+                .menuTranslate:
+                menuClose
             case .menuNav, .menuCopyLink, .pin, .unpin: press
             case .recentRemove: recentCollapse
             case .recentReturn: recentReturn
@@ -174,8 +176,8 @@ enum Theme {
             case .plusTap: .searchOpened
             case .chevronTap: .menuOpened
             // The eyes tap as their neighbour the clear button and the menu's toggles do; the footage cannot show it.
-            case .searchClear, .menuNav, .menuFind, .menuShare, .desktopToggle, .displayOptionsToggle, .menuTranslate,
-                .readerOpen, .readerClose, .archiveOpen, .macTabsOpen, .settingsOpen, .permissionAnswer,
+            case .searchClear, .menuNav, .menuHistoryJump, .menuFind, .menuShare, .desktopToggle, .displayOptionsToggle,
+                .menuTranslate, .readerOpen, .readerClose, .archiveOpen, .macTabsOpen, .settingsOpen, .permissionAnswer,
                 .privateToggle:
                 .buttonTap
             case .barTranslate: .buttonTap
@@ -315,7 +317,7 @@ enum Theme {
                 .menuCopyLink, .menuAddressEdit, .menuAddressSubmit, .pin, .unpin, .menuFind, .menuShare, .zoomStep,
                 .desktopToggle, .displayOptionsToggle, .menuTranslate, .archiveRestore, .macTabsPick,
                 .barSwipe, .barSwipeSettle, .recentRemove, .recentReturn, .readerOpen, .readerClose, .readerDragDismiss,
-                .readerDragReturn, .permissionAnswer, .privateToggle:
+                .readerDragReturn, .permissionAnswer, .privateToggle, .menuHistoryJump:
                 .frames(2)
             }
         }
@@ -566,6 +568,7 @@ enum Theme {
         static let navPillCorner: CGFloat = 24
         static let navPillButtonWidth: CGFloat = 40
         static let navPillInset: CGFloat = 5
+        static let historyFavicon: CGFloat = 20
         static let menuPillToTiles: CGFloat = 18
         static let menuTileGap: CGFloat = 16
         static let menuTileHeight: CGFloat = 88
@@ -697,6 +700,7 @@ enum Theme {
         static let navPillURL = Font.system(size: 15, weight: .medium)
         static let navPillURLUIFont = UIFont.systemFont(ofSize: 15, weight: .medium)
         static let navPillGlyph = Font.system(size: 15, weight: .medium)
+        static let navPillGlyphUIFont = UIFont.systemFont(ofSize: 15, weight: .medium)
         static let menuTileIcon = Font.system(size: 25, weight: .light)
         // The label's metrics place it under the tile by its cap top and baseline.
         static let menuTileLabelUIFont = UIFont.systemFont(ofSize: 11, weight: .medium)

@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import WebKit
 
 struct NavPill: View {
     @Environment(AppEnvironment.self) private var env
@@ -20,15 +21,15 @@ struct NavPill: View {
                 )
                 .padding(.horizontal, Theme.Metrics.menuPadding)
             } else {
-                button("chevron.left", label: "Back", enabled: controller.canGoBack, action: controller.goBack)
-                button("chevron.right", label: "Forward", enabled: controller.canGoForward, action: controller.goForward)
+                historyButton(.back)
+                historyButton(.forward)
                 Button {
                     env.haptics.fire(.menuAddressEdit)
                     isEditing = true
                 } label: {
                     ZStack {
                         if let url = controller.url {
-                            Text(verbatim: Self.displayText(url))
+                            Text(verbatim: HistoryRow.place(url))
                                 .font(Theme.Typography.navPillURL)
                                 .foregroundStyle(ink)
                                 .lineLimit(1)
@@ -64,12 +65,6 @@ struct NavPill: View {
         }
     }
 
-    static func displayText(_ url: URL) -> String {
-        guard let host = url.host() else { return url.absoluteString }
-        let path = url.path()
-        return path == "/" ? host : host + path
-    }
-
     private func submit(_ text: String) {
         guard let url = InputResolver.resolve(text, engine: env.browser.settings.searchEngine) else { return }
         env.haptics.fire(.menuAddressSubmit)
@@ -85,6 +80,29 @@ struct NavPill: View {
     private func navigate(_ action: () -> Void) {
         env.haptics.fire(.menuNav)
         action()
+    }
+
+    private func historyButton(_ direction: HistoryDirection) -> some View {
+        let enabled = direction == .back ? controller.canGoBack : controller.canGoForward
+        return HistoryButton(
+            direction: direction,
+            tint: UIColor(ink.opacity(Theme.Opacity.menuIcon)),
+            items: { controller.history(direction) },
+            favicon: { url in url.host().flatMap { env.favicons.favicon(for: $0).image } },
+            onStep: { navigate(direction == .back ? controller.goBack : controller.goForward) },
+            onPick: jump,
+            onPress: { env.haptics.prepare(.menuNav) }
+        )
+        .frame(width: Theme.Metrics.navPillButtonWidth, height: Theme.Metrics.navPillHeight)
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : Theme.Opacity.navPillDisabled)
+    }
+
+    // Like a typed address, a picked page is where the person is going, so the menu closes onto it.
+    private func jump(to item: WKBackForwardListItem) {
+        env.haptics.fire(.menuHistoryJump)
+        env.ui.close()
+        controller.go(to: item)
     }
 
     private func button(_ systemImage: String, label: String, enabled: Bool, action: @escaping () -> Void) -> some View {

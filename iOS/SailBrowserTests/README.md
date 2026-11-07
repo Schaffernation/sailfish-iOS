@@ -8,9 +8,9 @@ files in earlier formats are described in `Fixtures/README.md`.
 Only logic and persistence whose loss would go unnoticed in use: the stores and their saved files (`BrowserStore`,
 `HistoryStore`, `SessionStore`, `SnapshotStore`, `FaviconStore`, `DownloadStore`, `DebouncedWriter`, and the earlier
 saved-state formats), private tabs never reaching disk, the archive policy and grouping, URL handling (`InputResolver`,
-`TrackingParams`, `SearchEngine`, `ExternalLinks`, tab export and import), the suggestion ranker, model and service,
-load-error classification, the reader document's escaping, the bundled blocking lists and PageShield data, and the
-connectivity and energy policies.
+`TrackingParams`, `SearchEngine`, `ExternalLinks`, tab export and import, the back and forward lists' rows), the
+suggestion ranker, model and service, load-error classification, the reader document's escaping, the bundled blocking
+lists and PageShield data, and the connectivity and energy policies.
 
 Views, gestures, animations, materials, layout, haptics and anything that drives a live web view are left to the
 running app. A new test belongs here only if it guards such a contract and depends on none of those.
