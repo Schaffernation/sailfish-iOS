@@ -503,6 +503,10 @@ enum Theme {
         static let leftFirstStepFraction: CGFloat = 0.237
         static let leftStepFraction: CGFloat = 0.039
         static let olderDepthScales: [CGFloat] = [0.98, 0.93]
+        // A deck card's shadow, around a card drawn with the deck's corner: the blur and how far it falls below the
+        // card, so a card reads lifted off the one it overlaps and off the backdrop.
+        static let cardShadowBlur: CGFloat = 16
+        static let cardShadowOffset = CGSize(width: 0, height: 4)
         static let cardPlaceholderFavicon: CGFloat = 40
         nonisolated static let cardHeaderGap: CGFloat = 10
         static let cardHeaderHeight: CGFloat = 24
@@ -646,6 +650,9 @@ enum Theme {
         static let tabStackBorder: CGFloat = 0.2
         static let switcherControlFill: CGFloat = 0.12
         static let cardHeaderPin: CGFloat = 0.7
+        // Black, the deck card's shadow at full zoom. The backdrop is the same dark gradient in either appearance, so
+        // one level serves both; over a light card it reads as a soft edge, over the backdrop as depth.
+        static let cardShadow: CGFloat = 0.5
         static let emptyDeckLabel: CGFloat = 0.5
         static let searchDim: CGFloat = 0.2
         static let suggestionSecondary: CGFloat = 0.45

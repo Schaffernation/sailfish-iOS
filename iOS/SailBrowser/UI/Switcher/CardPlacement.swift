@@ -198,6 +198,13 @@ struct CardPlacement<Header: View>: ViewModifier {
         }
         #endif
         return ZStack {
+            // Under the card and inside its turn and fade, so the shadow moves, tilts and fades with it.
+            if t.shadowOpacity > 0 {
+                CardShadow(clip: clip, screen: screen)
+                    .opacity(t.shadowOpacity)
+                    .placed(inner)
+                    .allowsHitTesting(false)
+            }
             content
                 .overlay(clip.fill(Color.black.opacity(t.dim)).placed(inner).allowsHitTesting(false))
                 .clipShape(isActive ? unplaced.clip : clip)

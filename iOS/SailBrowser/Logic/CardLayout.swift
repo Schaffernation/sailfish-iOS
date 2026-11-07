@@ -16,6 +16,9 @@ nonisolated struct CardTransform: Equatable, Sendable {
     var zIndex: Double
     // Cut from the card's top, as clipHeight cuts from its bottom; both in drawn points from the card's top.
     var clipTop: CGFloat = 0
+    // Only the deck casts shadows, in step with its zoom: none on the page, full on a resting card. The bar swipe's
+    // and the flick's cards cast none.
+    var shadowOpacity: CGFloat = 0
 }
 
 nonisolated struct CardLayout: Sendable {
@@ -245,7 +248,7 @@ nonisolated struct CardLayout: Sendable {
             offset: rest.offset, scale: rest.scale, clipHeight: rest.clipHeight, rotation: .zero,
             corner: t == 0 ? 0 : lerp(displayCorner, cardCorner, t), opacity: 1, headerOpacity: t,
             titleOpacity: max(0, 1 - abs(p)), dim: rest.dim * t,
-            zIndex: isActive && t < 1 ? Self.zoomingZIndex : Double(slot))
+            zIndex: isActive && t < 1 ? Self.zoomingZIndex : Double(slot), shadowOpacity: t)
         if isActive {
             transform.scale = lerp(1, rest.scale, t)
             transform.clipHeight = lerp(screen.height, rest.clipHeight, t)
